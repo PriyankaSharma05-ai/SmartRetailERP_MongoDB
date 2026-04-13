@@ -1,0 +1,21 @@
+# Node
+node_modules/
+smartretail/frontend/node_modules/
+
+# Java
+target/
+*.class
+
+# Env
+.env
+
+# Build
+dist/
+build/
+
+# Logs
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
