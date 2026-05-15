@@ -80,35 +80,34 @@ export default function AIAssistantPage() {
 
     try {
       const history = messages.map(m => ({ role:m.role, content:m.content }))
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'llama3-8b-8192',
-
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            ...history,
-            { role: 'user', content: msg }
-          ],
-          temperature : 0.7,
-          max_tokens: 512
-        })
-      });
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: [
+              ...history.map(m => ({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: m.content }]
+              })),
+              { role: 'user', parts: [{ text: msg }] }
+            ],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 512 }
+          })
+        }
+      )
       const data = await response.json()
+      console.log('Gemini response:', data)
       if (!response.ok) {
-        console.error("Groq API Error:", data)
-        throw new Error(data.error?.message || "API request failed")
+        throw new Error(data.error?.message || 'API request failed')
       }
-
-      const replyText = data.choices[0].message.content
-
+      const replyText = data.candidates[0].content.parts[0].text
       setMessages(m => [...m, { role:'assistant', content:replyText }])
-    } catch {
-      setMessages(m => [...m, { role:'assistant', content:'⚠️ Connection error. Please check your internet and try again.' }])
+    } catch(err){
+        console.log('Gemini Error:', err)
+      setMessages(m => [...m, { role:'assistant', content:`⚠️ Error : ${err.message}` }])
     }
     setLoading(false)
   }
@@ -127,7 +126,7 @@ export default function AIAssistantPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="🤖 AI Business Assistant" subtitle="Powered by Claude · Real-time insights for your store"/>
+      <PageHeader title="🤖 AI Business Assistant" subtitle="Powered by Gemini · Real-time insights for your store"/>
 
       {/* Tabs */}
       <div className="flex gap-2">
@@ -148,7 +147,7 @@ export default function AIAssistantPage() {
               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center"><Bot size={16} className="text-indigo-400"/></div>
               <div>
                 <div className="text-sm font-bold text-slate-100">AI Business Assistant</div>
-                <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/><span className="text-xs text-emerald-400">Online · Claude claude-sonnet-4-20250514</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/><span className="text-xs text-emerald-400">Online · Gemini 1.5 Flash</span></div>
               </div>
             </div>
 

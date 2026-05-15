@@ -10,7 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableCaching
 @EnableAsync
 @EnableScheduling
-public class SmartRetailApplication {
+public class
+SmartRetailApplication {
     public static void main(String[] args) {
 
         SpringApplication.run(SmartRetailApplication.class, args);
